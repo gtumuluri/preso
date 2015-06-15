@@ -1,0 +1,83 @@
+First Ever Shiny App
+========================================================
+author: Coursera Student XYZ
+date: `r format(Sys.Date(), '%b %d, %Y')`
+font-family: 'Helvetica'
+
+App Overview
+========================================================
+
+**In this first Shiny app, you will see an interactive bar plot:**
+
+- Displays monthly data of a quantity of interest
+- Starting from year 2010
+- Up to the year selected by the user
+
+Use of Shiny Elements
+========================================================
+
+**This app uses a variety of Shiny capabilities:**
+
+- *navbarPage* to organize app and documentation separately
+- *tabPanel* to create two tabs for two navigational elements
+- *slidebarLayout* to organize the content on each tab
+
+**Additionally, following input and output elemts are used:**
+
+- *selectInput* for a dropdown selection of year
+- *renderPlot* to output a ggplot-based plot output
+
+Data Overview and Summary
+========================================================
+
+* Time and numeric quantity data from a personal source.
+
+* Data aggregated into a monthly value, and date is retained
+
+* The following are some interesting things in the data:
+
+```{r, echo=FALSE, eval=TRUE}
+library(zoo)
+monthly_data <- read.csv('shiny_example.csv')
+monthly_data$date <- as.Date(monthly_data$date)
+```
+
+ - Number of months: **`r nrow(monthly_data)`**
+ - Highest monthly quantity: **`r formatC(max(monthly_data$count), format = 'd', big.mark = ',')`**
+ - Highest month: **`r as.yearmon(monthly_data[monthly_data$count == max(monthly_data$count), ]$date)`**
+
+Visual Display
+===
+
+**The Shiny app uses a bar plot produced by ggplot2:**
+
+- Shows monthly quantity value and growth
+- Uses classic theme
+- Renders a subset of the data based on user input
+
+***
+
+```{r, echo=FALSE, eval=TRUE}
+library(dplyr)
+library(ggplot2)
+library(grid)
+library(scales)
+
+selected_data <- filter(monthly_data, year <= 2012)
+    ggplot(selected_data, aes(x = date, y = count)) +
+      geom_bar(stat = 'identity', size = 0.01, fill = I('sienna1')) +
+      theme_classic() +
+      ggtitle("Some Number by Month") +
+      xlab("Month and Year") +
+      theme(plot.margin = unit(c(2, 2, 2, 2), 'cm'),
+            title = element_text(size = 14, color = I('grey20'),
+                                 family = 'Helvetica', face = 'bold', vjust = 2),
+            axis.title.y = element_blank(),
+            axis.title.x = element_text(vjust = -2),
+            axis.line = element_line(size = 0.5, color = I('grey50'))) +
+      scale_x_date(limits = c(min(monthly_data$date), max(monthly_data$date)),
+                              labels = date_format('%Y-%m'), breaks = ('12 months')) +
+      scale_y_continuous(labels = comma,
+                         limits = c(0, 500000),
+                         breaks = seq(0, 500000, 100000))
+```
